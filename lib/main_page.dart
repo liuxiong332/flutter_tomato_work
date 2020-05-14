@@ -19,9 +19,7 @@ class MainPage extends StatelessWidget {
             child: Column(
               children: [
                 HeadTitle(),
-                Counter(
-                  duration: tomato != null ? tomato.workDuration : Duration(minutes: 20),
-                ),
+                
                 WorkForm(),
                 // WorkState(tomatos.last),
               ],

@@ -26,14 +26,12 @@ class DeleteTomatoEvent extends TomatoRecordEvent {
 class Tomato {
   int id;
   String name;
-  String description;
   DateTime startTime;
   Duration workDuration;
   Duration restDuration;
 
   Tomato({
     this.name,
-    this.description,
     this.workDuration,
     this.restDuration,
   }) : startTime = DateTime.now();
@@ -41,20 +39,18 @@ class Tomato {
   Tomato copyWith(Tomato newTomato) {
     return Tomato(
       name: newTomato.name ?? this.name,
-      description: newTomato.description ?? this.description,
       workDuration: newTomato.workDuration ?? this.workDuration,
       restDuration: newTomato.restDuration ?? this.restDuration,
     );
   }
 }
 
-// 番茄历史记录 Bloc，增加/删除/更新 历史记录 
+// 番茄历史记录 Bloc，增加/删除/更新 历史记录
 class TomatoRecordBloc extends Bloc<TomatoRecordEvent, List<Tomato>> {
   @override
   List<Tomato> get initialState => [
         Tomato(
           name: "Hello",
-          description: "Hello World",
           workDuration: Duration(minutes: 10),
           restDuration: Duration(minutes: 5),
         ),
@@ -79,11 +75,15 @@ class TomatoRecordBloc extends Bloc<TomatoRecordEvent, List<Tomato>> {
 }
 
 // 更新当前使用的番茄 属性
-class ActiveTomatoEvent {
+class ActiveTomatoEvent {}
+
+class UpdateActiveTomatoEvent extends ActiveTomatoEvent {
   Tomato tomato;
 
-  ActiveTomatoEvent(this.tomato);
+  UpdateActiveTomatoEvent(this.tomato);
 }
+
+class ResetActiveTomatoEvent extends ActiveTomatoEvent {}
 
 // 当前使用番茄 bloc
 class ActiveTomatoBloc extends Bloc<ActiveTomatoEvent, Tomato> {
@@ -92,6 +92,10 @@ class ActiveTomatoBloc extends Bloc<ActiveTomatoEvent, Tomato> {
 
   @override
   Stream<Tomato> mapEventToState(ActiveTomatoEvent event) async* {
-    yield state.copyWith(event.tomato);
+    if (event is UpdateActiveTomatoEvent) {
+      yield state.copyWith(event.tomato);
+    } else if (event is ResetActiveTomatoEvent) {
+      yield null;
+    }
   }
 }

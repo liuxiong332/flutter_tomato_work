@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mywork/tomato_bloc.dart';
+import './counter.dart';
 
 enum TomatoStatus {
   OnWork, // 正在工作中
@@ -52,40 +54,9 @@ class WorkStateState extends State<WorkState> {
   Widget build(BuildContext context) {
     switch (status) {
       case TomatoStatus.OnWork:
-        return Column(
-          children: [
-            Text(
-              "你正在应用任务",
-              style: TextStyle(
-                color: Color.fromARGB(255, 200, 200, 0),
-                fontSize: 40,
-              ),
-            ),
-            Text(
-              "您已经工作${expireSecs ~/ 60}:${expireSecs % 60}",
-              style: TextStyle(
-                color: Color(0xFF8c0032),
-                fontSize: 42,
-              ),
-            ),
-            Text(
-              "享受沉浸式工作",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 28,
-                color: Color(0xFF003c8f),
-              ),
-            ),
-          ],
-        );
+        return OnWorkStatusView();
       case TomatoStatus.OnRest:
-        return Column(
-          children: [
-            Text("你正在休息"),
-            Text("您已经休息${expireSecs ~/ 60}:${expireSecs % 60}"),
-            Text("尽情休息吧"),
-          ],
-        );
+        return OnRestStatusView();
       case TomatoStatus.End:
         return Column(
           children: [
@@ -99,5 +70,69 @@ class WorkStateState extends State<WorkState> {
   void dispose() {
     super.dispose();
     timer.cancel();
+  }
+}
+
+class DoingStatusView extends StatelessWidget {
+  DoingStatusView({this.duration, this.text});
+
+  final Duration duration;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    // ignore: close_sinks
+    final bloc = BlocProvider.of<ActiveTomatoBloc>(context);
+    return Column(
+      children: [
+        Counter(
+          duration: duration,
+        ),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 16,
+            color: Color(0xFF666666),
+          ),
+        ),
+        BlocBuilder<ActiveTomatoBloc, Tomato>(
+          builder: (context, state) => SizedBox(
+            width: 100,
+            height: 30,
+            child: RaisedButton(
+              child: Text(
+                "取消",
+                style: TextStyle(fontSize: 14),
+              ),
+              color: Color(0xFF006dcc),
+              highlightColor: Color(0xFF0044cc),
+              textColor: Colors.white,
+              onPressed: () => bloc.add(ResetActiveTomatoEvent()),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class OnWorkStatusView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DoingStatusView(
+      duration: Duration(minutes: 20),
+      text: "你需要在 11:07 - 11:32完成如下事情，享受沉浸式工作，加油哦^_^",
+    );
+  }
+}
+
+
+class OnRestStatusView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DoingStatusView(
+      duration: Duration(minutes: 20),
+      text: "你正在休息，尽情享受美好时光吧~",
+    );
   }
 }
