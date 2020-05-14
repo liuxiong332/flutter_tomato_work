@@ -22,8 +22,8 @@ class WorkFormState extends State<WorkForm> {
       var bloc = BlocProvider.of<ActiveTomatoBloc>(context);
       bloc.add(UpdateActiveTomatoEvent(Tomato(
         name: workContent,
-        workDuration: Duration(minutes: 30),
-        restDuration: Duration(minutes: 5),
+        workDuration: Duration(minutes: 1),
+        restDuration: Duration(minutes: 1),
       )));
     }
   }

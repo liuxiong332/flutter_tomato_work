@@ -20,7 +20,7 @@ class MainPage extends StatelessWidget {
             child: Column(
               children: [
                 HeadTitle(),
-                
+
                 ActiveWork(),
                 // WorkState(tomatos.last),
               ],

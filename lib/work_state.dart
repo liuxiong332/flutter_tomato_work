@@ -31,13 +31,16 @@ class WorkStateState extends State<WorkState> {
   }
 
   int leftSecs = 0;
-  TomatoStatus status;
+  TomatoStatus status = TomatoStatus.OnWork;
+  TomatoStatus prevStatus = TomatoStatus.OnWork;
 
   Timer timer;
 
   void updateStatus() {
     final tomato = widget.tomato;
-    var secs = DateTime.now().millisecondsSinceEpoch ~/ 1000 - tomato.startTime.millisecondsSinceEpoch ~/ 1000;
+    prevStatus = status;
+    var secs = DateTime.now().millisecondsSinceEpoch ~/ 1000 -
+        tomato.startTime.millisecondsSinceEpoch ~/ 1000;
     if (secs < tomato.workDuration.inSeconds) {
       status = TomatoStatus.OnWork;
       leftSecs = tomato.workDuration.inSeconds - secs;
@@ -52,23 +55,53 @@ class WorkStateState extends State<WorkState> {
   }
 
   @override
+  void initState() {
+    updateStatus();
+    super.initState();
+  }
+
+  void showAlert() {
+    Future.delayed(
+      Duration.zero,
+      () => showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Text("恭喜你，你又完成了一个番茄任务，继续加油哦^_^"),
+            actions: [
+              FlatButton(
+                child: Text("确定"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    Future.delayed(Duration(minutes: 1), () => Navigator.of(context).pop());
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (prevStatus != status) {
+      showAlert();
+    }
+
     switch (status) {
       case TomatoStatus.OnWork:
         return OnWorkStatusView(
           leftDuration: Duration(seconds: leftSecs),
           startTime: widget.tomato.startTime,
           duration: widget.tomato.workDuration,
+          workContent: widget.tomato.name,
         );
       case TomatoStatus.OnRest:
         return OnRestStatusView(duration: Duration(seconds: leftSecs));
       case TomatoStatus.End:
-        return Column(
-          children: [
-            Text("当前任务已经结束"),
-          ],
-        );
+        return EndWorkView();
     }
+    return Container();
   }
 
   @override
@@ -79,16 +112,16 @@ class WorkStateState extends State<WorkState> {
 }
 
 class DoingStatusView extends StatelessWidget {
-  DoingStatusView({this.duration, this.text});
+  DoingStatusView({this.duration, this.text, this.workContent});
 
   final Duration duration;
   final String text;
+  final String workContent;
 
   @override
   Widget build(BuildContext context) {
     // ignore: close_sinks
     final bloc = BlocProvider.of<ActiveTomatoBloc>(context);
-    print("duration ${duration.inSeconds}");
     return Column(
       children: [
         Counter(
@@ -105,6 +138,14 @@ class DoingStatusView extends StatelessWidget {
             ),
           ),
         ),
+        if (workContent != null)
+          Padding(
+            padding: EdgeInsets.only(top: 0, bottom: 20),
+            child: Text(
+              workContent,
+              style: TextStyle(fontSize: 24, color: Colors.blue[400]),
+            ),
+          ),
         BlocBuilder<ActiveTomatoBloc, Tomato>(
           builder: (context, state) => SizedBox(
             width: 100,
@@ -127,12 +168,14 @@ class DoingStatusView extends StatelessWidget {
 }
 
 class OnWorkStatusView extends StatelessWidget {
-  OnWorkStatusView({this.leftDuration, this.duration, this.startTime});
+  OnWorkStatusView(
+      {this.leftDuration, this.duration, this.startTime, this.workContent});
 
   final Duration leftDuration;
 
   final DateTime startTime;
   final Duration duration;
+  final String workContent;
 
   @override
   Widget build(BuildContext context) {
@@ -140,6 +183,7 @@ class OnWorkStatusView extends StatelessWidget {
       duration: leftDuration,
       text:
           "你需要在 ${dateTimeToHM(startTime)} - ${dateTimeToHM(startTime.add(duration))}完成如下事情，享受沉浸式工作，加油哦^_^",
+      workContent: workContent,
     );
   }
 }
@@ -154,6 +198,41 @@ class OnRestStatusView extends StatelessWidget {
     return DoingStatusView(
       duration: duration,
       text: "休息，休息一下，尽情享受美好时光吧^_^",
+    );
+  }
+}
+
+class EndWorkView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // ignore: close_sinks
+    final bloc = BlocProvider.of<ActiveTomatoBloc>(context);
+    return Flex(
+      direction: Axis.vertical,
+      children: [
+        Flex(
+          direction: Axis.horizontal,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  "当前任务已经结束",
+                  style: TextStyle(fontSize: 32, color: Colors.orangeAccent),
+                )),
+          ],
+        ),
+        RaisedButton(
+          child: Text(
+            "重新开始任务",
+            style: TextStyle(fontSize: 14),
+          ),
+          color: Color(0xFF006dcc),
+          highlightColor: Color(0xFF0044cc),
+          textColor: Colors.white,
+          onPressed: () => bloc.add(ResetActiveTomatoEvent()),
+        )
+      ],
     );
   }
 }
