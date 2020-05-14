@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mywork/tomato_bloc.dart';
 import './counter.dart';
+import './utils.dart';
 
 enum TomatoStatus {
   OnWork, // 正在工作中
@@ -17,12 +18,11 @@ class WorkState extends StatefulWidget {
   final Tomato tomato;
 
   @override
-  State<StatefulWidget> createState() => WorkStateState(tomato);
+  State<StatefulWidget> createState() => WorkStateState();
 }
 
 class WorkStateState extends State<WorkState> {
-  WorkStateState(Tomato tomato) : tomato = tomato {
-    updateStatus();
+  WorkStateState() {
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         updateStatus();
@@ -30,21 +30,22 @@ class WorkStateState extends State<WorkState> {
     });
   }
 
-  final Tomato tomato;
-  int expireSecs = 0;
+  int leftSecs = 0;
   TomatoStatus status;
 
   Timer timer;
 
   void updateStatus() {
-    var secs = DateTime.now().second - tomato.startTime.second;
+    final tomato = widget.tomato;
+    var secs = DateTime.now().millisecondsSinceEpoch ~/ 1000 - tomato.startTime.millisecondsSinceEpoch ~/ 1000;
     if (secs < tomato.workDuration.inSeconds) {
       status = TomatoStatus.OnWork;
-      expireSecs = secs;
+      leftSecs = tomato.workDuration.inSeconds - secs;
     } else if (secs <
         tomato.workDuration.inSeconds + tomato.restDuration.inSeconds) {
       status = TomatoStatus.OnRest;
-      expireSecs = secs - tomato.workDuration.inSeconds;
+      leftSecs =
+          tomato.workDuration.inSeconds + tomato.restDuration.inSeconds - secs;
     } else {
       status = TomatoStatus.End;
     }
@@ -54,9 +55,13 @@ class WorkStateState extends State<WorkState> {
   Widget build(BuildContext context) {
     switch (status) {
       case TomatoStatus.OnWork:
-        return OnWorkStatusView();
+        return OnWorkStatusView(
+          leftDuration: Duration(seconds: leftSecs),
+          startTime: widget.tomato.startTime,
+          duration: widget.tomato.workDuration,
+        );
       case TomatoStatus.OnRest:
-        return OnRestStatusView();
+        return OnRestStatusView(duration: Duration(seconds: leftSecs));
       case TomatoStatus.End:
         return Column(
           children: [
@@ -83,16 +88,21 @@ class DoingStatusView extends StatelessWidget {
   Widget build(BuildContext context) {
     // ignore: close_sinks
     final bloc = BlocProvider.of<ActiveTomatoBloc>(context);
+    print("duration ${duration.inSeconds}");
     return Column(
       children: [
         Counter(
           duration: duration,
+          isActive: true,
         ),
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: 16,
-            color: Color(0xFF666666),
+        Padding(
+          padding: EdgeInsets.only(top: 20, bottom: 20),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              color: Color(0xFF666666),
+            ),
           ),
         ),
         BlocBuilder<ActiveTomatoBloc, Tomato>(
@@ -101,7 +111,7 @@ class DoingStatusView extends StatelessWidget {
             height: 30,
             child: RaisedButton(
               child: Text(
-                "取消",
+                "停止",
                 style: TextStyle(fontSize: 14),
               ),
               color: Color(0xFF006dcc),
@@ -117,22 +127,33 @@ class DoingStatusView extends StatelessWidget {
 }
 
 class OnWorkStatusView extends StatelessWidget {
+  OnWorkStatusView({this.leftDuration, this.duration, this.startTime});
+
+  final Duration leftDuration;
+
+  final DateTime startTime;
+  final Duration duration;
+
   @override
   Widget build(BuildContext context) {
     return DoingStatusView(
-      duration: Duration(minutes: 20),
-      text: "你需要在 11:07 - 11:32完成如下事情，享受沉浸式工作，加油哦^_^",
+      duration: leftDuration,
+      text:
+          "你需要在 ${dateTimeToHM(startTime)} - ${dateTimeToHM(startTime.add(duration))}完成如下事情，享受沉浸式工作，加油哦^_^",
     );
   }
 }
 
-
 class OnRestStatusView extends StatelessWidget {
+  OnRestStatusView({this.duration});
+
+  final Duration duration;
+
   @override
   Widget build(BuildContext context) {
     return DoingStatusView(
-      duration: Duration(minutes: 20),
-      text: "你正在休息，尽情享受美好时光吧~",
+      duration: duration,
+      text: "休息，休息一下，尽情享受美好时光吧^_^",
     );
   }
 }

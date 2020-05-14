@@ -78,7 +78,7 @@ class ActiveWorkState extends State<ActiveWork> {
   Widget build(BuildContext context) {
     return BlocBuilder<ActiveTomatoBloc, Tomato>(
       builder: (context, state) {
-        return state == null ? WorkForm() : WorkState(state);
+        return state.name == null ? WorkForm() : WorkState(state);
       },
     );
   }

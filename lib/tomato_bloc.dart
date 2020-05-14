@@ -88,14 +88,14 @@ class ResetActiveTomatoEvent extends ActiveTomatoEvent {}
 // 当前使用番茄 bloc
 class ActiveTomatoBloc extends Bloc<ActiveTomatoEvent, Tomato> {
   @override
-  Tomato get initialState => null;
+  Tomato get initialState => Tomato();
 
   @override
   Stream<Tomato> mapEventToState(ActiveTomatoEvent event) async* {
     if (event is UpdateActiveTomatoEvent) {
-      yield state.copyWith(event.tomato);
+      yield state == null ? event.tomato : state.copyWith(event.tomato);
     } else if (event is ResetActiveTomatoEvent) {
-      yield null;
+      yield Tomato();
     }
   }
 }

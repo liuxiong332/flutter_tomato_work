@@ -9,6 +9,7 @@ import './work_state.dart';
 class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // ignore: close_sinks
     final tomatoBloc = BlocProvider.of<TomatoRecordBloc>(context);
 
     return Scaffold(
@@ -20,7 +21,7 @@ class MainPage extends StatelessWidget {
               children: [
                 HeadTitle(),
                 
-                WorkForm(),
+                ActiveWork(),
                 // WorkState(tomatos.last),
               ],
             ),
