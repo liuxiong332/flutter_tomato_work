@@ -17,8 +17,15 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         // visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: BlocProvider<TomatoBloc>(
-        create: (context) => TomatoBloc(),
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => TomatoRecordBloc(),
+          ),
+          BlocProvider(
+            create: (context) => ActiveTomatoBloc(),
+          )
+        ],
         child: MainPage(),
       ),
     );

@@ -1,27 +1,28 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-// 番茄 事件
-class TomatoEvent {}
+// 番茄记录 事件
+class TomatoRecordEvent {}
 
-// 添加新番茄 事件
-class AddTomatoEvent extends TomatoEvent {
+// 添加历史番茄记录 事件
+class AddTomatoEvent extends TomatoRecordEvent {
   Tomato tomato;
 
   AddTomatoEvent(this.tomato);
 }
 
-// 添加新番茄 事件
-class UpdateTomatoEvent extends TomatoEvent {
+// 更新历史番茄记录 事件
+class UpdateTomatoEvent extends TomatoRecordEvent {
   Tomato tomato;
   UpdateTomatoEvent(this.tomato);
 }
 
-// 添加新番茄 事件
-class DeleteTomatoEvent extends TomatoEvent {
+// 删除历史番茄 事件
+class DeleteTomatoEvent extends TomatoRecordEvent {
   int tomatoId;
   DeleteTomatoEvent(this.tomatoId);
 }
 
+// 一个番茄工作类
 class Tomato {
   int id;
   String name;
@@ -47,7 +48,8 @@ class Tomato {
   }
 }
 
-class TomatoBloc extends Bloc<TomatoEvent, List<Tomato>> {
+// 番茄历史记录 Bloc，增加/删除/更新 历史记录 
+class TomatoRecordBloc extends Bloc<TomatoRecordEvent, List<Tomato>> {
   @override
   List<Tomato> get initialState => [
         Tomato(
@@ -59,7 +61,7 @@ class TomatoBloc extends Bloc<TomatoEvent, List<Tomato>> {
       ];
 
   @override
-  Stream<List<Tomato>> mapEventToState(TomatoEvent event) async* {
+  Stream<List<Tomato>> mapEventToState(TomatoRecordEvent event) async* {
     if (event is AddTomatoEvent) {
       yield List<Tomato>.from(state)..add(event.tomato);
     } else if (event is UpdateTomatoEvent) {
@@ -73,5 +75,23 @@ class TomatoBloc extends Bloc<TomatoEvent, List<Tomato>> {
       yield List<Tomato>.from(state)
         ..removeWhere((element) => element.id == event.tomatoId);
     }
+  }
+}
+
+// 更新当前使用的番茄 属性
+class ActiveTomatoEvent {
+  Tomato tomato;
+
+  ActiveTomatoEvent(this.tomato);
+}
+
+// 当前使用番茄 bloc
+class ActiveTomatoBloc extends Bloc<ActiveTomatoEvent, Tomato> {
+  @override
+  Tomato get initialState => null;
+
+  @override
+  Stream<Tomato> mapEventToState(ActiveTomatoEvent event) async* {
+    yield state.copyWith(event.tomato);
   }
 }

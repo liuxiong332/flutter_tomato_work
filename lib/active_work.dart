@@ -28,28 +28,35 @@ class WorkFormState extends State<WorkForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Form(
-        key: formKey,
-        child: Column(
-          children: <Widget>[
-            TextFormField(
-              validator: (val) => val.isEmpty ? "请输入番茄名字" : null,
-              onSaved: (val) => workName = val,
-              decoration:
-                  const InputDecoration(hintText: "输入番茄名字", labelText: "番茄名字"),
-            ),
-            TextFormField(
-              decoration:
-                  const InputDecoration(hintText: "输入番茄内容", labelText: "番茄内容"),
+    return Form(
+      key: formKey,
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(top: 20, bottom: 20, left: 15, right: 15),
+            child: TextFormField(
+              decoration: const InputDecoration(
+                hintText: "请输入任务...",
+                border: OutlineInputBorder(),
+              ),
               onSaved: (val) => workContent = val,
             ),
-            RaisedButton(
-              child: Text("创建"),
+          ),
+          SizedBox(
+            width: 200,
+            height: 50,
+            child: RaisedButton(
+              child: Text(
+                "开始工作",
+                style: TextStyle(fontSize: 14),
+              ),
+              color: Color(0xFF006dcc),
+              highlightColor: Color(0xFF0044cc),
+              textColor: Colors.white,
               onPressed: submit,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
