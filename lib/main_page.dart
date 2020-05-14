@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mywork/active_work.dart';
+import 'package:mywork/additional_ui.dart';
 import 'package:mywork/counter.dart';
 import 'package:mywork/head_title.dart';
 import './tomato_bloc.dart';
@@ -20,28 +21,13 @@ class MainPage extends StatelessWidget {
             child: Column(
               children: [
                 HeadTitle(),
-
                 ActiveWork(),
+                AdditionalUI(),
                 // WorkState(tomatos.last),
               ],
             ),
           );
         },
-      ),
-      floatingActionButton: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 5.0),
-            child: FloatingActionButton(
-              child: Icon(Icons.add),
-              onPressed: () {
-                tomatoBloc.add(AddTomatoEvent(Tomato(name: "Tomato1")));
-              },
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mywork/main_page.dart';
+import 'package:mywork/setting_bloc.dart';
 import 'package:mywork/tomato_bloc.dart';
 
 void main() {
@@ -24,6 +25,9 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) => ActiveTomatoBloc(),
+          ),
+          BlocProvider(
+            create: (context) => SettingBloc(),
           )
         ],
         child: MainPage(),
