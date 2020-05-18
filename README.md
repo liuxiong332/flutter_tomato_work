@@ -16,7 +16,7 @@ For help getting started with Flutter, view our
 samples, guidance on mobile development, and a full API reference.
 
 ## Dev Stack
-**Flutter**
-**Bloc**
-**shared_preferences**
-**sqlife**
+* **Flutter**
+* [**Bloc**](https://pub.dev/packages/flutter_bloc)
+* [**shared_preferences**](https://pub.dev/packages/shared_preferences)
+* [**sqfite**](https://pub.dev/packages/sqflite)
