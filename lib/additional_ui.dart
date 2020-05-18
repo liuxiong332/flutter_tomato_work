@@ -39,10 +39,46 @@ class AdditionalUI extends StatefulWidget {
   State<StatefulWidget> createState() => AdditionalUIState();
 }
 
-class AdditionalUIState extends State<AdditionalUI> {
-  int workMinutes;
-  int restMinutes;
+class OtherButton extends StatelessWidget {
+  OtherButton({this.text, this.onPressed});
+
+  final String text;
+  final Function onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 80,
+      height: 30,
+      child: RaisedButton(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 14,
+          ),
+        ),
+        color: Color(0xFF49afcd),
+        highlightColor: Color(0xFF49afcd),
+        textColor: Colors.white,
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
+// 设置对话框
+class SettingDialog extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return SettingDialogState();
+  }
+}
+
+class SettingDialogState extends State<SettingDialog> {
   final formKey = GlobalKey<FormState>();
+
+  int curWorkMinutes;
+  int curRestMinutes;
 
   void handleOK() {
     final form = formKey.currentState;
@@ -51,69 +87,86 @@ class AdditionalUIState extends State<AdditionalUI> {
 
       // ignore: close_sinks
       final bloc = BlocProvider.of<SettingBloc>(context);
-      bloc.add(UpdateSettingEvent(
-          Setting(workMinutes: workMinutes, restMinutes: restMinutes)));
+      bloc.add(UpdateSettingEvent(Setting(
+        workMinutes: curWorkMinutes,
+        restMinutes: curRestMinutes,
+      )));
       Navigator.of(context).pop();
     }
-  }
-
-  void showSettingDialog() {
-    // ignore: close_sinks
-    final bloc = BlocProvider.of<SettingBloc>(context);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          content: Form(
-            key: formKey,
-            child: SizedBox(
-              height: 200,
-              child: Column(
-                children: [
-                  SettingInput(
-                    hintText: "工作时长",
-                    initialVal: bloc.state.workMinutes,
-                    onSaved: (val) {
-                      workMinutes = int.parse(val);
-                    },
-                  ),
-                  SettingInput(
-                    hintText: "休息时长",
-                    initialVal: bloc.state.restMinutes,
-                    onSaved: (val) {
-                      restMinutes = int.parse(val);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            FlatButton(
-              child: Text("确定"),
-              onPressed: () => handleOK(),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     // ignore: close_sinks
-    return Flex(direction: Axis.horizontal, children: [
-      RaisedButton(
-        child: Text(
-          "设置",
-          style: TextStyle(fontSize: 14),
+    final bloc = BlocProvider.of<SettingBloc>(context);
+
+    return AlertDialog(
+      content: Form(
+        key: formKey,
+        child: SizedBox(
+          height: 200,
+          child: Column(
+            children: [
+              SettingInput(
+                hintText: "工作时长",
+                initialVal: bloc.state.workMinutes,
+                onSaved: (val) {
+                  curWorkMinutes = int.parse(val);
+                },
+              ),
+              SettingInput(
+                hintText: "休息时长",
+                initialVal: bloc.state.restMinutes,
+                onSaved: (val) {
+                  curRestMinutes = int.parse(val);
+                },
+              ),
+            ],
+          ),
         ),
-        color: Color(0xFF006dcc),
-        highlightColor: Color(0xFF0044cc),
-        textColor: Colors.white,
-        onPressed: () => showSettingDialog(),
       ),
+      actions: [
+        FlatButton(
+          child: Text("确定"),
+          onPressed: () => handleOK(),
+        ),
+      ],
+    );
+  }
+}
+
+class AdditionalUIState extends State<AdditionalUI> {
+  void showSettingDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return SettingDialog();
+      },
+    );
+  }
+
+  void showHistory() {
+    Navigator.of(context).pushNamed("history");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // ignore: close_sinks
+    return Column(children: [
+      Row(children: [
+        Column(children: [
+          Flex(direction: Axis.horizontal, children: [
+            OtherButton(
+              text: "设置",
+              onPressed: () => showSettingDialog(),
+            ),
+            OtherButton(
+              text: "任务记录",
+              onPressed: () => showHistory(),
+            ),
+          ]),
+        ])
+      ]),
     ]);
   }
 }

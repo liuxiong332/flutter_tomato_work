@@ -60,6 +60,17 @@ class WorkStateState extends State<WorkState> {
     super.initState();
   }
 
+  void cancelWork() {
+    // ignore: close_sinks
+    final bloc = BlocProvider.of<ActiveTomatoBloc>(context);
+    // ignore: close_sinks
+    final listbloc = BlocProvider.of<TomatoRecordBloc>(context);
+
+    bloc.add(ResetActiveTomatoEvent());
+    widget.tomato.stopTime = DateTime.now();
+    listbloc.add(AddTomatoEvent(widget.tomato));
+  }
+
   void showAlert() {
     Future.delayed(
       Duration.zero,
@@ -86,6 +97,13 @@ class WorkStateState extends State<WorkState> {
   Widget build(BuildContext context) {
     if (prevStatus != status) {
       showAlert();
+      if (status == TomatoStatus.End) {
+        Future.delayed(Duration(seconds: 0), () {
+          // ignore: close_sinks
+          final listbloc = BlocProvider.of<TomatoRecordBloc>(context);
+          listbloc.add(AddTomatoEvent(widget.tomato));
+        });
+      }
     }
 
     switch (status) {
@@ -95,9 +113,13 @@ class WorkStateState extends State<WorkState> {
           startTime: widget.tomato.startTime,
           duration: widget.tomato.workDuration,
           workContent: widget.tomato.name,
+          onStop: cancelWork,
         );
       case TomatoStatus.OnRest:
-        return OnRestStatusView(duration: Duration(seconds: leftSecs));
+        return OnRestStatusView(
+          duration: Duration(seconds: leftSecs),
+          onStop: cancelWork,
+        );
       case TomatoStatus.End:
         return EndWorkView();
     }
@@ -112,16 +134,19 @@ class WorkStateState extends State<WorkState> {
 }
 
 class DoingStatusView extends StatelessWidget {
-  DoingStatusView({this.duration, this.text, this.workContent});
+  DoingStatusView({this.duration, this.text, this.workContent, this.onStop});
 
   final Duration duration;
   final String text;
   final String workContent;
+  final Function onStop;
 
   @override
   Widget build(BuildContext context) {
     // ignore: close_sinks
     final bloc = BlocProvider.of<ActiveTomatoBloc>(context);
+    // ignore: close_sinks
+    final listbloc = BlocProvider.of<TomatoRecordBloc>(context);
     return Column(
       children: [
         Counter(
@@ -158,7 +183,7 @@ class DoingStatusView extends StatelessWidget {
               color: Color(0xFF006dcc),
               highlightColor: Color(0xFF0044cc),
               textColor: Colors.white,
-              onPressed: () => bloc.add(ResetActiveTomatoEvent()),
+              onPressed: () => onStop(),
             ),
           ),
         ),
@@ -169,13 +194,18 @@ class DoingStatusView extends StatelessWidget {
 
 class OnWorkStatusView extends StatelessWidget {
   OnWorkStatusView(
-      {this.leftDuration, this.duration, this.startTime, this.workContent});
+      {this.leftDuration,
+      this.duration,
+      this.startTime,
+      this.workContent,
+      this.onStop});
 
   final Duration leftDuration;
 
   final DateTime startTime;
   final Duration duration;
   final String workContent;
+  final Function onStop;
 
   @override
   Widget build(BuildContext context) {
@@ -184,20 +214,23 @@ class OnWorkStatusView extends StatelessWidget {
       text:
           "你需要在 ${dateTimeToHM(startTime)} - ${dateTimeToHM(startTime.add(duration))}完成如下事情，享受沉浸式工作，加油哦^_^",
       workContent: workContent,
+      onStop: onStop,
     );
   }
 }
 
 class OnRestStatusView extends StatelessWidget {
-  OnRestStatusView({this.duration});
+  OnRestStatusView({this.duration, this.onStop});
 
   final Duration duration;
+  final Function onStop;
 
   @override
   Widget build(BuildContext context) {
     return DoingStatusView(
       duration: duration,
       text: "休息，休息一下，尽情享受美好时光吧^_^",
+      onStop: onStop,
     );
   }
 }

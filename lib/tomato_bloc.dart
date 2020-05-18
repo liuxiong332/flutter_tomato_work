@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mywork/tomato_store.dart';
 
 // 番茄记录 事件
 class TomatoRecordEvent {}
@@ -8,6 +9,12 @@ class AddTomatoEvent extends TomatoRecordEvent {
   Tomato tomato;
 
   AddTomatoEvent(this.tomato);
+}
+
+class BatchAddTomatoEvent extends TomatoRecordEvent {
+  List<Tomato> tomatos;
+
+  BatchAddTomatoEvent(this.tomatos);
 }
 
 // 更新历史番茄记录 事件
@@ -29,12 +36,21 @@ class Tomato {
   DateTime startTime;
   Duration workDuration;
   Duration restDuration;
+  DateTime stopTime;
 
   Tomato({
     this.name,
     this.workDuration,
     this.restDuration,
   }) : startTime = DateTime.now();
+
+  Tomato.all({
+    this.name,
+    this.startTime,
+    this.workDuration,
+    this.restDuration,
+    this.stopTime,
+  });
 
   Tomato copyWith(Tomato newTomato) {
     return Tomato(
@@ -47,6 +63,15 @@ class Tomato {
 
 // 番茄历史记录 Bloc，增加/删除/更新 历史记录
 class TomatoRecordBloc extends Bloc<TomatoRecordEvent, List<Tomato>> {
+  TomatoStore tomatoStore;
+
+  TomatoRecordBloc() : super() {
+    tomatoStore = TomatoStore();
+    tomatoStore.init().then((value) => tomatoStore
+        .getRecords()
+        .then((value) => add(BatchAddTomatoEvent(value))));
+  }
+
   @override
   List<Tomato> get initialState => [
         Tomato(
@@ -59,8 +84,13 @@ class TomatoRecordBloc extends Bloc<TomatoRecordEvent, List<Tomato>> {
   @override
   Stream<List<Tomato>> mapEventToState(TomatoRecordEvent event) async* {
     if (event is AddTomatoEvent) {
+      // Insert the record
+      await tomatoStore.insertRecord(event.tomato);
       yield List<Tomato>.from(state)..add(event.tomato);
+    } else if (event is BatchAddTomatoEvent) {
+      yield event.tomatos;
     } else if (event is UpdateTomatoEvent) {
+      // This event is not used now
       var index = state.indexWhere((element) => element.id == event.tomato.id);
       yield [
         ...state.sublist(0, index),
@@ -68,6 +98,7 @@ class TomatoRecordBloc extends Bloc<TomatoRecordEvent, List<Tomato>> {
         ...state.sublist(index + 1)
       ];
     } else if (event is DeleteTomatoEvent) {
+      // The remove is not used now.
       yield List<Tomato>.from(state)
         ..removeWhere((element) => element.id == event.tomatoId);
     }

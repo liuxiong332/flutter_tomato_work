@@ -7,7 +7,23 @@ import 'package:mywork/head_title.dart';
 import './tomato_bloc.dart';
 import './work_state.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return MainPageState();
+  }
+}
+
+class MainPageState extends State<MainPage> {
+  void showSettingDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return SettingDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // ignore: close_sinks
@@ -22,12 +38,30 @@ class MainPage extends StatelessWidget {
               children: [
                 HeadTitle(),
                 ActiveWork(),
-                AdditionalUI(),
+                // AdditionalUI(),
                 // WorkState(tomatos.last),
               ],
             ),
           );
         },
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: showSettingDialog,
+            tooltip: '设置',
+            child: new Icon(Icons.settings),
+            heroTag: "setting",
+          ),
+          SizedBox(height: 10),
+          FloatingActionButton(
+            onPressed: () => Navigator.of(context).pushNamed("/history"),
+            tooltip: '查看历史记录 ',
+            child: new Icon(Icons.history),
+            heroTag: "history",
+          )
+        ],
       ),
     );
   }
