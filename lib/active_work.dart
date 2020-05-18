@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mywork/setting_bloc.dart';
 import 'package:mywork/tomato_bloc.dart';
 import 'package:mywork/work_state.dart';
 import './counter.dart';
@@ -20,10 +21,13 @@ class WorkFormState extends State<WorkForm> {
 
       //ignore: close_sinks
       var bloc = BlocProvider.of<ActiveTomatoBloc>(context);
+
+      //ignore: close_sinks
+      var setBloc = BlocProvider.of<SettingBloc>(context);
       bloc.add(UpdateActiveTomatoEvent(Tomato(
         name: workContent,
-        workDuration: Duration(minutes: 1),
-        restDuration: Duration(minutes: 1),
+        workDuration: Duration(minutes: setBloc.state.workMinutes),
+        restDuration: Duration(minutes: setBloc.state.restMinutes),
       )));
     }
   }
@@ -34,8 +38,12 @@ class WorkFormState extends State<WorkForm> {
       key: formKey,
       child: Column(
         children: <Widget>[
-          Counter(
-            duration: Duration(minutes: 20),
+          BlocBuilder<SettingBloc, Setting>(
+            builder: (context, state) {
+              return Counter(
+                duration: Duration(minutes: state.workMinutes),
+              );
+            },
           ),
           Padding(
             padding: EdgeInsets.only(top: 20, bottom: 20, left: 15, right: 15),

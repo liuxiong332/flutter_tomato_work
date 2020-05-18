@@ -17,14 +17,17 @@ class SettingInput extends StatelessWidget {
       child: SizedBox(
         width: 300,
         child: TextFormField(
-          initialValue: initialVal.toString(),
+          initialValue: initialVal != null ? initialVal.toString() : "",
           validator: (val) => int.tryParse(val) == null ? "请输入有效的数字" : null,
           autofocus: true,
           decoration: InputDecoration(
-            hintText: "工作时长",
+            labelText: hintText,
+            labelStyle: TextStyle(fontSize: 14),
+            hintText: hintText,
             prefixIcon: Icon(Icons.event),
           ),
           keyboardType: TextInputType.number,
+          onSaved: onSaved,
         ),
       ),
     );
@@ -55,6 +58,7 @@ class AdditionalUIState extends State<AdditionalUI> {
   }
 
   void showSettingDialog() {
+    // ignore: close_sinks
     final bloc = BlocProvider.of<SettingBloc>(context);
 
     showDialog(
